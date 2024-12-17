@@ -19,14 +19,18 @@ class Knihovna:
         Args:
             funkce: Funkce, která má být volána po kontrole existence knihy.
         """
-
         def wrapper(self, isbn: str, *args, **kwargs):
-            """
-            Wrapper funkce kontrolující existenci knihy před voláním dané funkce.
-            """
-            if not any(kniha.isbn == isbn for kniha in self.knihy):
+            kniha = next((kniha for kniha in self.knihy if kniha.isbn == isbn), None)
+
+            if not kniha:
                 raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
+
+        # Pokud je kniha vypůjčena, vyhoďme specifickou výjimku
+            if isbn in self.vypujcene_knihy:
+                raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
+
             return funkce(self, isbn, *args, **kwargs)
+
         return wrapper
 
     @classmethod
@@ -39,9 +43,11 @@ class Knihovna:
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
-        knihovna = Knihovna("Neznámá knihovna")  # Mějte zde správný název
+        knihovna = Knihovna("Neznámá knihovna")
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
+        # Načteme název knihovny z prvního řádku
+            knihovna.nazev = next(reader)[0]  # Předpokládáme, že první řádek obsahuje název knihovny
             for row in reader:
                 if len(row) == 4:
                     nazev, autor, rok_vydani, isbn = row
