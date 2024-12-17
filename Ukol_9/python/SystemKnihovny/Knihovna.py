@@ -25,7 +25,7 @@ class Knihovna:
             Wrapper funkce kontrolující existenci knihy před voláním dané funkce.
             """
             if not any(kniha.isbn == isbn for kniha in self.knihy):
-                raise ValueError(f"Kniha s ISBN {isbn} neexistuje v knihovně.")
+                raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
             return funkce(self, isbn, *args, **kwargs)
         return wrapper
 
@@ -39,13 +39,14 @@ class Knihovna:
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
-        knihovna = Knihovna("Testovaci knihovna")  # Mějte zde správný název
+        knihovna = Knihovna("Neznámá knihovna")  # Mějte zde správný název
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             for row in reader:
-                nazev, autor, rok_vydani, isbn = row
-                kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
-                knihovna.pridej_knihu(kniha)
+                if len(row) == 4:
+                    nazev, autor, rok_vydani, isbn = row
+                    kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
+                    knihovna.pridej_knihu(kniha)
         return knihovna
 
     def pridej_knihu(self, kniha: Kniha):
