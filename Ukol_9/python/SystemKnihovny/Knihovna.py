@@ -24,6 +24,8 @@ class Knihovna:
             """
             Wrapper funkce kontrolující existenci knihy před voláním dané funkce.
             """
+            if not any(kniha.isbn == isbn for kniha in self.knihy):
+                raise ValueError(f"Kniha s ISBN {isbn} neexistuje v knihovně.")
             return funkce(self, isbn, *args, **kwargs)
         return wrapper
 
@@ -37,7 +39,17 @@ class Knihovna:
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
-        return Knihovna("Neznámá knihovna")
+        knihovna = Knihovna("Neznámá knihovna")
+        try:
+            with open(soubor, mode='r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if len(row) == 4:  # očekáváme 4 hodnoty pro knihu
+                        nazev, autor, rok_vydani, isbn = row
+                        knihovna.knihy.append(Kniha(nazev, autor, int(rok_vydani), isbn))
+        except FileNotFoundError:
+            print(f"Soubor {soubor} nebyl nalezen.")
+        return knihovna
 
     def pridej_knihu(self, kniha: Kniha):
         """
@@ -46,7 +58,7 @@ class Knihovna:
         Args:
             kniha: Objekt knihy, který má být přidán.
         """
-        pass
+        self.knihy.append(kniha)
 
     @kniha_existuje
     def odeber_knihu(self, isbn: str):
@@ -58,7 +70,8 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN neexistuje.
         """
-        pass
+        self.knihy = [kniha for kniha in self.knihy if kniha.isbn != isbn]
+
 
     def vyhledej_knihu(self, klicova_slovo: str = "", isbn: str = ""):
         """
@@ -70,7 +83,9 @@ class Knihovna:
         Returns:
             Seznam nalezených knih.
         """
-        return []
+        if isbn:
+            return [kniha for kniha in self.knihy if kniha.isbn == isbn]
+        return [kniha for kniha in self.knihy if klicova_slovo.lower() in kniha.nazev.lower() or klicova_slovo.lower() in kniha.autor.lower()]
 
     def registruj_ctenare(self, ctenar: Ctenar):
         """
@@ -79,7 +94,8 @@ class Knihovna:
         Args:
             ctenar: Objekt čtenáře, který má být zaregistrován.
         """
-        pass
+        self.ctenari.append(ctenar)
+
 
     def zrus_registraci_ctenare(self, ctenar: Ctenar):
         """
@@ -88,7 +104,8 @@ class Knihovna:
         Args:
             ctenar: Objekt čtenáře, jehož registrace má být zrušena.
         """
-        pass
+        self.ctenari = [c for c in self.ctenari if c != ctenar]
+
 
     def vyhledej_ctenare(self, klicova_slovo: str = "", cislo_prukazky: int = None):
         """
@@ -100,7 +117,10 @@ class Knihovna:
         Returns:
             Seznam nalezených čtenářů.
         """
-        return []
+        if cislo_prukazky:
+            return [ctenar for ctenar in self.ctenari if ctenar.cislo_prukazky == cislo_prukazky]
+        return [ctenar for ctenar in self.ctenari if klicova_slovo.lower() in ctenar.jmeno.lower() or klicova_slovo.lower() in ctenar.prijmeni.lower()]
+
 
     @kniha_existuje
     def vypujc_knihu(self, isbn: str, ctenar: Ctenar):
@@ -113,7 +133,9 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN neexistuje nebo je již vypůjčena.
         """
-        pass
+        if isbn in self.vypujcene_knihy:
+            raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
+        self.vypujcene_knihy[isbn] = (ctenar, datetime.datetime.now())
 
     @kniha_existuje
     def vrat_knihu(self, isbn: str, ctenar: Ctenar):
@@ -126,7 +148,9 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN není vypůjčena tímto čtenářem.
         """
-        pass
+        if isbn not in self.vypujcene_knihy or self.vypujcene_knihy[isbn][0] != ctenar:
+            raise ValueError(f"Tato kniha nebyla vypůjčena tímto čtenářem.")
+        del self.vypujcene_knihy[isbn]
 
     def __str__(self) -> str:
-        return ""
+        return f"Knihovna: {self.nazev}, Počet knih: {len(self.knihy)}, Počet čtenářů: {len(self.ctenari)}"
