@@ -33,7 +33,7 @@ class Knihovna:
         return wrapper
 
     @classmethod
-    def z_csv(cls, soubor: str) -> 'Knihovna':
+    def z_csv(cls, soubor: str) -> Knihovna:
         """
         Načte data knihovny ze souboru CSV.
 
@@ -45,23 +45,17 @@ class Knihovna:
         knihovna = Knihovna("Neznámá knihovna")
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-        # Načteme název knihovny z prvního řádku
+            # Načteme název knihovny z prvního řádku
             knihovna.nazev = next(reader)[0].strip()
-        # Odstranění prefixu "Knihovna:" pokud je součástí názvu
+            # Odstranění prefixu "Knihovna:" pokud je součástí názvu
             if knihovna.nazev.startswith("Knihovna:"):
                 knihovna.nazev = knihovna.nazev.replace("Knihovna:", "").strip()
 
-        # Read the rest of the CSV file
             for row in reader:
-                if len(row) == 5 and row[0] == "kniha":  # Book data (expecting 5 columns)
-                    nazev, autor, rok_vydani, isbn = row[1], row[2], row[3], row[4]
+                if len(row) == 4:
+                    nazev, autor, rok_vydani, isbn = row
                     kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
                     knihovna.pridej_knihu(kniha)
-                elif len(row) == 7 and row[0] == "ctenar":  # Reader data (expecting 7 columns)
-                    jmeno, prijmeni = row[5], row[6]
-                    ctenar = Ctenar(jmeno, prijmeni)
-                    knihovna.registruj_ctenare(ctenar)
-
         return knihovna
 
     def pridej_knihu(self, kniha: Kniha):
