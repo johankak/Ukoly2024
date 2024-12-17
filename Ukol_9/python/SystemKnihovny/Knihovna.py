@@ -25,11 +25,10 @@ class Knihovna:
             if not kniha:
                 raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
 
-            if 'vypujc_knihu' in funkce.__name__ and isbn in self.vypujcene_knihy:
+            if funkce.__name__ == 'vypujc_knihu' and isbn in self.vypujcene_knihy:
                 raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
 
             return funkce(self, isbn, *args, **kwargs)
-
         return wrapper
 
     @classmethod
@@ -46,19 +45,15 @@ class Knihovna:
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             knihovna.nazev = next(reader)[0].replace("Knihovna:", "").strip()
-
-        # Skips the header row
             next(reader)
 
             for row in reader:
-                if len(row) == 5 and row[0] == "kniha":  # Book data
-                    nazev, autor, rok_vydani, isbn = row[1], row[2], row[3], row[4]
-                    kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
+                if len(row) >= 5 and row[0] == "kniha":
+                    kniha = Kniha(row[1], row[2], int(row[3]), row[4])
                     knihovna.pridej_knihu(kniha)
-                elif len(row) == 7 and row[0] == "ctenar":  # Reader data
-                    jmeno, prijmeni = row[5], row[6]
-                    ctenar = Ctenar(jmeno, prijmeni)
-                    knihovna.registruj_ctenare(ctenar)  # Register reader
+                elif len(row) >= 7 and row[0] == "ctenar":
+                    ctenar = Ctenar(row[5], row[6])
+                    knihovna.registruj_ctenare(ctenar)
 
         return knihovna
 
@@ -146,8 +141,6 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN neexistuje nebo je již vypůjčena.
         """
-        if isbn in self.vypujcene_knihy:
-            raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
         self.vypujcene_knihy[isbn] = (ctenar, datetime.date.today())
 
     @kniha_existuje
@@ -164,15 +157,11 @@ class Knihovna:
         if isbn not in self.vypujcene_knihy:
             raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena.")
 
-        vypujceny_ctenar, datum_vypujceni = self.vypujcene_knihy[isbn]
-
-    # Ensure that the book is returned by the correct reader
+        vypujceny_ctenar, _ = self.vypujcene_knihy[isbn]
         if vypujceny_ctenar != ctenar:
             raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena tímto čtenářem.")
 
-    # Remove the book from the list of borrowed books
         del self.vypujcene_knihy[isbn]
-
 
     def __str__(self) -> str:
         return f"Knihovna: {self.nazev}, Počet knih: {len(self.knihy)}, Počet čtenářů: {len(self.ctenari)}"
