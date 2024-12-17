@@ -25,11 +25,9 @@ class Knihovna:
             if not kniha:
                 raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
 
-        # Pokud je kniha vypůjčena, vyhoďme specifickou výjimku
-            if isbn in self.vypujcene_knihy:
+            if 'vypujc_knihu' in funkce.__name__ and isbn in self.vypujcene_knihy:
                 raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
 
-        # Call the original function
             return funkce(self, isbn, *args, **kwargs)
 
         return wrapper
@@ -53,11 +51,16 @@ class Knihovna:
             if knihovna.nazev.startswith("Knihovna:"):
                 knihovna.nazev = knihovna.nazev.replace("Knihovna:", "").strip()
 
-            for row in reader:
-                if len(row) == 4:
-                    nazev, autor, rok_vydani, isbn = row
-                    kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
-                    knihovna.pridej_knihu(kniha)
+        for row in reader:
+            if len(row) == 4 and row[0] == "kniha":  # Check if it's a book row
+                nazev, autor, rok_vydani, isbn = row[1], row[2], row[3], row[4]
+                kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
+                knihovna.pridej_knihu(kniha)
+            elif len(row) == 7 and row[0] == "ctenar":  # Check if it's a reader row
+                jmeno, prijmeni = row[5], row[6]
+                ctenar = Ctenar(jmeno, prijmeni)
+                knihovna.registruj_ctenare(ctenar)
+
         return knihovna
 
     def pridej_knihu(self, kniha: Kniha):
