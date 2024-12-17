@@ -29,6 +29,7 @@ class Knihovna:
             if isbn in self.vypujcene_knihy:
                 raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
 
+        # Call the original function
             return funkce(self, isbn, *args, **kwargs)
 
         return wrapper
@@ -80,6 +81,8 @@ class Knihovna:
         """
         self.knihy = [kniha for kniha in self.knihy if kniha.isbn != isbn]
 
+        if isbn in self.vypujcene_knihy:
+            del self.vypujcene_knihy[isbn]
 
     def vyhledej_knihu(self, klicova_slovo: str = "", isbn: str = ""):
         """
@@ -156,12 +159,18 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN není vypůjčena tímto čtenářem.
         """
-        kniha = self.najdi_knihu_isbn(isbn)
-        if kniha is None:
-            raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
-        if kniha.status == "vypujcena":
-            kniha.status = "k dispozici"
-        else:
+        if isbn not in self.vypujcene_knihy:
             raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena.")
+
+        vypujceny_ctenar, datum_vypujceni = self.vypujcene_knihy[isbn]
+
+    # Ensure that the book is returned by the correct reader
+        if vypujceny_ctenar != ctenar:
+            raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena tímto čtenářem.")
+
+    # Remove the book from the list of borrowed books
+        del self.vypujcene_knihy[isbn]
+
+
     def __str__(self) -> str:
         return f"Knihovna: {self.nazev}, Počet knih: {len(self.knihy)}, Počet čtenářů: {len(self.ctenari)}"
