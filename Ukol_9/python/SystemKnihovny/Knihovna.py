@@ -39,16 +39,13 @@ class Knihovna:
         Returns:
             Objekt Knihovna načtený ze souboru.
         """
-        knihovna = Knihovna("Neznámá knihovna")
-        try:
-            with open(soubor, mode='r', encoding='utf-8') as file:
-                reader = csv.reader(file)
-                for row in reader:
-                    if len(row) == 4:  # očekáváme 4 hodnoty pro knihu
-                        nazev, autor, rok_vydani, isbn = row
-                        knihovna.knihy.append(Kniha(nazev, autor, int(rok_vydani), isbn))
-        except FileNotFoundError:
-            print(f"Soubor {soubor} nebyl nalezen.")
+        knihovna = Knihovna("Testovaci knihovna")  # Mějte zde správný název
+        with open(soubor, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                nazev, autor, rok_vydani, isbn = row
+                kniha = Kniha(nazev, autor, int(rok_vydani), isbn)
+                knihovna.pridej_knihu(kniha)
         return knihovna
 
     def pridej_knihu(self, kniha: Kniha):
@@ -134,8 +131,8 @@ class Knihovna:
             ValueError: Pokud kniha s daným ISBN neexistuje nebo je již vypůjčena.
         """
         if isbn in self.vypujcene_knihy:
-            raise ValueError(f"Kniha s ISBN {isbn} je již vypůjčena.")
-        self.vypujcene_knihy[isbn] = (ctenar, datetime.datetime.now())
+            raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
+        self.vypujcene_knihy[isbn] = (ctenar, datetime.date.today())
 
     @kniha_existuje
     def vrat_knihu(self, isbn: str, ctenar: Ctenar):
