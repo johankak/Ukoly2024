@@ -47,7 +47,7 @@ class Knihovna:
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
         # Načteme název knihovny z prvního řádku
-            knihovna.nazev = next(reader)[0]  # Předpokládáme, že první řádek obsahuje název knihovny
+            knihovna.nazev = next(reader)[0].strip()  # Předpokládáme, že první řádek obsahuje název knihovny
             for row in reader:
                 if len(row) == 4:
                     nazev, autor, rok_vydani, isbn = row
@@ -152,8 +152,15 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN není vypůjčena tímto čtenářem.
         """
-        if isbn not in self.vypujcene_knihy or self.vypujcene_knihy[isbn][0] != ctenar:
-            raise ValueError(f"Tato kniha nebyla vypůjčena tímto čtenářem.")
+        if isbn not in self.vypujcene_knihy:
+            raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena.")
+
+        vypujcena_kniha = self.vypujcene_knihy[isbn]
+
+        if vypujcena_kniha != ctenar:
+            raise ValueError(f"Kniha s ISBN {isbn} nebyla vypůjčena tímto čtenářem.")
+
+    # Odstraníme knihu z vypůjčených knih
         del self.vypujcene_knihy[isbn]
 
     def __str__(self) -> str:
