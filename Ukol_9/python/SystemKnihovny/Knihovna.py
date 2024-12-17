@@ -47,7 +47,11 @@ class Knihovna:
         with open(soubor, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
         # Načteme název knihovny z prvního řádku
-            knihovna.nazev = next(reader)[0].strip()  # Předpokládáme, že první řádek obsahuje název knihovny
+            knihovna.nazev = next(reader)[0].strip()
+        # Odstranění prefixu "Knihovna:" pokud je součástí názvu
+            if knihovna.nazev.startswith("Knihovna:"):
+                knihovna.nazev = knihovna.nazev.replace("Knihovna:", "").strip()
+
             for row in reader:
                 if len(row) == 4:
                     nazev, autor, rok_vydani, isbn = row
@@ -162,6 +166,7 @@ class Knihovna:
 
     # Odstraníme knihu z vypůjčených knih
         del self.vypujcene_knihy[isbn]
+        self.knihy.append(vypujcena_kniha)  # Přidáme knihu zpět do knihovny
 
     def __str__(self) -> str:
         return f"Knihovna: {self.nazev}, Počet knih: {len(self.knihy)}, Počet čtenářů: {len(self.ctenari)}"
