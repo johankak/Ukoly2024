@@ -156,17 +156,12 @@ class Knihovna:
         Raises:
             ValueError: Pokud kniha s daným ISBN není vypůjčena tímto čtenářem.
         """
-        if isbn not in self.vypujcene_knihy:
+        kniha = self.najdi_knihu_isbn(isbn)
+        if kniha is None:
+            raise ValueError(f"Kniha s ISBN {isbn} neexistuje.")
+        if kniha.status == "vypujcena":
+            kniha.status = "k dispozici"
+        else:
             raise ValueError(f"Kniha s ISBN {isbn} není vypůjčena.")
-
-        vypujcena_kniha = self.vypujcene_knihy[isbn]
-
-        if vypujcena_kniha != ctenar:
-            raise ValueError(f"Kniha s ISBN {isbn} nebyla vypůjčena tímto čtenářem.")
-
-    # Odstraníme knihu z vypůjčených knih
-        del self.vypujcene_knihy[isbn]
-        self.knihy.append(vypujcena_kniha)  # Přidáme knihu zpět do knihovny
-
     def __str__(self) -> str:
         return f"Knihovna: {self.nazev}, Počet knih: {len(self.knihy)}, Počet čtenářů: {len(self.ctenari)}"
